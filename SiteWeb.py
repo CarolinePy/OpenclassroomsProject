@@ -52,7 +52,7 @@ for urlCategorieI in listeUrlCategorie: # on parcourt les urls absolues du table
     soup = BeautifulSoup(response.text, 'html.parser')
     baseUrl = "https://books.toscrape.com/"
     #print(urlCategorieI)
-
+    page = 1
     # listing du nombre total de produit pour chaque categorie et du nombre total de pages par catégorie
     nbrMaxProdPage = 20  # nombre maximum de produits par page
     nbrProduit = soup.form.strong.text  # recupération du nombre de produits total d'une catégorie dans le code source
@@ -60,25 +60,21 @@ for urlCategorieI in listeUrlCategorie: # on parcourt les urls absolues du table
     totalProduitsPage = nbrProduits / nbrMaxProdPage  # division du nombre total de produits de la catégorie par le nombre maximum de produits par page
     nbrPage = ceil(totalProduitsPage)
     #nbrPages = (f"{nbrPage}")
+    while page != nbrPage + 1:
+        if nbrPage > 1:
+            urlD = (urllib.parse.urljoin(urlCategorieI,varDynamique))  # on assemble les 2 morceaux d'url à l'aide d'urljoin
+            urlDynamique = urlD + f"{page}.html"
+            url = urlDynamique  # la variable url contiendra l'URL de la page produit à chaque itération dans un format de chaîne ; utilisation des f-strings qui permettent à {page} de recevoir la valeur actualisée de la page,
+            response = requests.get(url)
+            html = response.content
+            soup = BeautifulSoup(response.text, 'html.parser')
+            h3 = soup.find_all("h3").text  # je parcours tous les h3 de chaque url pour obtenir les titres
+            print(h3)
+            #titres.append(h3.get_text(strip=True))  # puis j'ajoute chaque titre à la liste des titres créée plus haut.
+            #for titre in titres[:2]:  # je parcours tous les titres de la liste
+                #print(titre)
+            print(url)
 
-    if nbrPage > 1:
-        urlD = (urllib.parse.urljoin(urlCategorieI, varDynamique))  # on assemble les 2 morceaux d'url à l'aide d'urljoin
-        urlDynamique = urlD + f"{page}.html"
-        print(urlDynamique)
-        print(nbrPage)
-        listeUrlCategorieDyn.append(urlDynamique)
-        for h3 in soup.find_all("h3"):  # je parcours tous les h3 de chaque url pour obtenir les titres
-            titres.append(h3.get_text(strip=True))  # puis j'ajoute chaque titre à la liste des titres créée plus haut.
-        for titre in titres[:nbrProduits]:  # je parcours tous les titres de la liste
-            print(titre)
 
 
-"""page = 1
-    while page != nbrPageDyn:
-        url = urlDynamique  # la variable url contiendra l'URL de la page produit à chaque itération dans un format de chaîne ; utilisation des f-strings qui permettent à {page} de recevoir la valeur actualisée de la page,
-        response = requests.get(url)
-        html = response.content
-        soup = BeautifulSoup(response.text, 'html.parser')
-
-    page = page + 1  # augmentation de la valeur de la page de 1 à la fin de chaque itération pour passer à la page suivante.
-"""
+        page = page + 1  # augmentation de la valeur de la page de 1 à la fin de chaque itération pour passer à la page suivante.
