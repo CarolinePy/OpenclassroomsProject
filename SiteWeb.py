@@ -42,7 +42,6 @@ for i in listeCategories:  # on parcourt les urls relatives ligne à ligne
     #print(totalCategorie)
     listeUrlCategorie.append(totalCategorie) # récupération des urls absolues dans le tableau listeUrlProduitParCategorie
 #print(listeUrlCategorie)
-page = 1
 varDynamique = "page-"
 
 for urlCategorieI in listeUrlCategorie: # on parcourt les urls absolues du tableau contenant la liste des urls absolues
@@ -60,6 +59,15 @@ for urlCategorieI in listeUrlCategorie: # on parcourt les urls absolues du table
     totalProduitsPage = nbrProduits / nbrMaxProdPage  # division du nombre total de produits de la catégorie par le nombre maximum de produits par page
     nbrPage = ceil(totalProduitsPage)
     #nbrPages = (f"{nbrPage}")
+    if page <= 1:
+        url = urlCategorieI  # la variable url contiendra l'URL de la page produit à chaque itération dans un format de chaîne ; utilisation des f-strings qui permettent à {page} de recevoir la valeur actualisée de la page,
+        response = requests.get(url)
+        html = response.content
+        soup = BeautifulSoup(response.text, 'html.parser')
+        h3 = soup.find_all("h3")  # je parcours tous les h3 de chaque url pour obtenir les titres
+        for titre in h3:
+            print(titre.get_text())
+    print(url)
     while page != nbrPage + 1:
         if nbrPage > 1:
             urlD = (urllib.parse.urljoin(urlCategorieI,varDynamique))  # on assemble les 2 morceaux d'url à l'aide d'urljoin
@@ -68,13 +76,13 @@ for urlCategorieI in listeUrlCategorie: # on parcourt les urls absolues du table
             response = requests.get(url)
             html = response.content
             soup = BeautifulSoup(response.text, 'html.parser')
-            h3 = soup.find_all("h3").text  # je parcours tous les h3 de chaque url pour obtenir les titres
-            print(h3)
+            h3 = soup.find_all("h3")  # je parcours tous les h3 de chaque url pour obtenir les titres
+            for titre in h3:
+                print(titre.get_text())
             #titres.append(h3.get_text(strip=True))  # puis j'ajoute chaque titre à la liste des titres créée plus haut.
             #for titre in titres[:2]:  # je parcours tous les titres de la liste
                 #print(titre)
             print(url)
 
-
-
         page = page + 1  # augmentation de la valeur de la page de 1 à la fin de chaque itération pour passer à la page suivante.
+
