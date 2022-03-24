@@ -230,4 +230,4 @@ for urli in liste_url_produit_par_categorie:  # on parcourt les urls absolues de
 save_to_csv(product_page_Url, universal_product_code, title, price_including_tax, price_excluding_tax, number_available,
             product_description, category, review_rating, image_url, temp_category)
 
-print("Opération terminée. Merci pour votre patience ;-)")
+print("Opération terminée. Tout s'est bien déroulé. Merci pour votre patience ;-)")
