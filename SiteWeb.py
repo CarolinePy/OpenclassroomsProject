@@ -4,6 +4,7 @@ import urllib.parse
 import urllib.request
 from math import *
 import pandas as pd
+import os
 
 # initialisation de variables
 titres = []  # Tableau dans lequel nous rangeons les titres
@@ -42,7 +43,7 @@ for i in liste_categories:  # Création d'une boucle qui parcourt les urls relat
     liste_url_categorie.append(total_categorie)  # récupération des urls absolues dans le tableau liste_url_categorie
 print("Merci de patienter pendant l'extraction des catégories du site", URL, "...")
 
-for url_categorie_absolue in liste_url_categorie:  # on parcourt les urls absolues du tableau contenant la liste des urls absolues
+for url_categorie_absolue in liste_url_categorie:  # on parcourt les urls absolues du tableau des categories
     url = url_categorie_absolue  # on indique que la variable url doit prendre comme valeur l'url absolue des categories contenues dans le tableau
     response = requests.get(url)
     html = response.content.decode('utf-8', 'ignore')
@@ -87,82 +88,59 @@ for url_categorie_absolue in liste_url_categorie:  # on parcourt les urls absolu
 print("Opération effectuée.")
 print("Veuillez patienter pendant la récupération des données produit pour chaque catégorie dans un fichier csv:")
 
+#  Création des fonctions d'extraction des données
+
 
 def element_extraction(soup):
     # récupération des éléments du tableau "table" de la page produit dans une liste
     element = soup.find('table', class_="table table-striped").findAll(["td"])
     return element
 
-
+#  UPC
 def UPC_extraction(element):
-    UPC = element[0]
-    return UPC
+    return element[0]
 
-
+# price_including_tax
 def price_incl_extraction(element):
-    # price_including_tax
-    price_incl = element[3]
-    return price_incl
+    return element[3]
 
-
+# price_excluding_tax
 def price_excl_extraction(element):
-    # price_excluding_tax
-    price_excl = element[2]
-    return price_excl
+    return element[2]
 
+# number available
 def stock_extraction(element):
-    # number available
-    stock = element[5]
-    return stock
+    return element[5]
 
-
+# Review_rating
 def review_extraction(element):
-    # Review_rating
-    review = element[6]
-    return review
+    return element[6]
 
-
+#  product_url
 def url_extraction(url):
-    product_page_url = url
-    return product_page_url
+    return url
 
-
+# title
 def title_extraction(soup):
-    # title
-    titre = soup.find('h1')
-    return titre
+    return soup.find('h1')
 
-
+#  descripption
 def description_extraction(soup):
     description_soup = soup.find("article", class_="product_page").findAll(["p"])
-    description = description_soup[3]
-    return description
+    return description_soup[3]
 
-
+#  categorie
 def cat_extraction(soup):
     cat = soup.find('ul', class_="breadcrumb").findAll(["li"])
-    catego = cat[2]
-    return catego
+    return cat[2]
 
-
+# image
 def image_extraction(base_url, soup):
     # image_url
-    image = soup.find('img')
-    return image
+    return soup.find('img')
 
 
 def extraction_donnees_site_web(base_url, soup, url, element):
-    url_extraction(url)
-    UPC_extraction(element)
-    title_extraction(soup)
-    price_incl_extraction(element)
-    price_excl_extraction(element)
-    stock_extraction(element)
-    description_extraction(soup)
-    cat_extraction(soup)
-    review_extraction(element)
-    image_extraction(base_url, soup)
-
     return url_extraction(url), UPC_extraction(element), title_extraction(soup), price_incl_extraction(element), price_excl_extraction(element), stock_extraction(element), description_extraction(soup), cat_extraction(soup), review_extraction(element), image_extraction(base_url, soup)
 
 def save_to_csv(product_page_Url, universal_product_code, title, price_including_tax, price_excluding_tax,
@@ -226,6 +204,28 @@ for urli in liste_url_produit_par_categorie:  # on parcourt les urls absolues de
     category.append(format_catego)
     review_rating.append(review.text)
     image_url.append(base_url + image["src"].replace("../", ""))
+
+    #  Téléchargement et enregistrement des images de chaque produit dans un dossier dédié nommé "images"
+
+    for img in image_url:  #  création d'une boucle pour recupérer les lien url de toutes les images du site
+        ROOT_DIRECTORY = "images"  #  création d'une constante pour le nom du dossier qui contient les images
+        url = img
+        file_name = img.split("/")[-1]  #  les noms des fichiers images ne contiendront que la fin de l'url.
+        category_image = format_catego #  création d'une variable qui récupère la nom de la cétégorie de l'image
+
+
+        def save_image(file_name, url, category_image):  #  création d'une fonction pour récupérer et enregistrer les img
+            new_directory = "{0}{1}{2}".format(ROOT_DIRECTORY, os.sep, category_image)  # création d'un répertoire par catégorie
+            new_file = "{0}{1}{2}.jpg".format(new_directory, os.sep, file_name)  #  création
+            if not os.path.isdir(new_directory):  # Si le répertoire n'existe pas...
+                os.makedirs(new_directory, exist_ok=True)  # alors on crée le répertoire de manière récursive
+
+            response = requests.get(url, stream=True)
+            f = open(new_file, 'wb')  # nom du fichier + wb (écriture en mode binaire)
+            f.write(response.content)
+            f.close()
+
+        save_image(file_name, url, category_image)
 
 save_to_csv(product_page_Url, universal_product_code, title, price_including_tax, price_excluding_tax, number_available,
             product_description, category, review_rating, image_url, temp_category)
