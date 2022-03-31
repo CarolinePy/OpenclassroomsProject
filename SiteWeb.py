@@ -262,8 +262,3 @@ save_to_csv(product_pages_url, universal_product_code, title, price_including_ta
             number_available, product_description, category, review_rating, image_url, temp_category)
 
 print("Opération terminée. Toutes les données et images ont été extraites. Merci pour votre patience ;-)")
-'''
-time_start = datetime.now()
-time_stop = datetime.now() -start
-print(f'Export process finished in {time_stop - time_start}.')
-'''
