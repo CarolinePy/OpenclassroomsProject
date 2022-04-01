@@ -28,6 +28,7 @@ Activation sous Linux et Mac:
 source <nom-de-votre-environnement-virtuel>/bin/activate
 
 Installer les dépendances avec pip
+
 pip install -r requirements.txt
 
 # How to use
