@@ -7,9 +7,10 @@ import pandas as pd
 import os
 from datetime import datetime
 
+start_date = datetime.now()
+
 # initialisation de variables
 titres = []  # Tableau dans lequel nous rangeons les titres
-liste_categories = []  # Urls relatives de toutes les categories du site
 liste_url_categorie = []  # Urls absolues de toutes les categories du site
 url_produits = []  # rangement des urls relatives des produits
 liste_url_produit_par_categorie = []  # rangement des urls absolues des produits
@@ -35,13 +36,9 @@ soup = BeautifulSoup(r.content.decode('utf-8', 'ignore'), 'html.parser')
 
 # création d'une boucle qui recupère l'ensemble des urls des catégories du site
 for link_category in soup.find("ul", class_='nav nav-list').ul.findAll("a"):
-    liste_categories.append(
-        link_category.get('href'))  # ajout des urls relatives à la liste liste_categories initialisée plus haut
-
-# Transformation des urls relatives des categories en urls absolues pour pouvoir y accéder
-for i in liste_categories:  # Création d'une boucle qui parcourt les urls relatives ligne à ligne des categories
-    total_categorie = (urllib.parse.urljoin(URL, i))  # on assemble les 2 morceaux d'url à l'aide d'urljoin
+    total_categorie = (urllib.parse.urljoin(URL, link_category.get('href')))  # on assemble les 2 morceaux d'url à l'aide d'urljoin
     liste_url_categorie.append(total_categorie)  # récupération des urls absolues dans le tableau liste_url_categorie
+
 print("Merci de patienter nous procédons à l'extraction des catégories du site", URL, "...")
 
 for url_categorie_absolue in liste_url_categorie:  # on parcourt les urls absolues du tableau des categories
@@ -166,7 +163,7 @@ def review_extraction(element):
 # Extraction image
 
 
-def image_extraction(base_url, soup):
+def image_extraction(soup):
     # image_url
     return soup.find('img')
 
@@ -174,7 +171,9 @@ def image_extraction(base_url, soup):
 def extraction_donnees_site_web(base_url, soup, url, element):
     return url_extraction(url), upc_extraction(element), title_extraction(soup), price_incl_extraction(element),\
            price_excl_extraction(element), stock_extraction(element), description_extraction(soup),\
-           cat_extraction(soup), review_extraction(element), image_extraction(base_url, soup)
+           cat_extraction(soup), review_extraction(element), image_extraction(soup)
+
+ROOT_DIRECTORY_CSV = "csv"
 
 
 def save_to_csv(product_pages_url, universal_product_code, title, price_including_tax, price_excluding_tax,
@@ -184,12 +183,16 @@ def save_to_csv(product_pages_url, universal_product_code, title, price_includin
          'Price_including_tax': price_including_tax, 'Price_excluding_tax': price_excluding_tax,
          'Number_available': number_available, 'Product_description': product_description, 'category': category,
          'Review_rating': review_rating, 'Image_url': image_url})
-    filename = '{0}.csv'.format(temp_category)
+    filename = '{0}{1}{2}.csv'.format(ROOT_DIRECTORY_CSV, os.sep, temp_category)
+    if not os.path.isdir(ROOT_DIRECTORY_CSV):  # Si le répertoire n'existe pas...
+        os.makedirs(ROOT_DIRECTORY_CSV, exist_ok=True)  # alors on crée le répertoire de manière récursive
     print(filename)
     book_to_scrape.to_csv(filename, index=False, encoding='utf-8')
 
+# Récupération des images
 
-ROOT_DIRECTORY = "Images"
+
+ROOT_DIRECTORY = "Images"  # création de la constante ROOt-Directory "images" pour la création du dossier de rangement
 
 
 def save_image(file_name, url, category_image):  # création d'une fonction pour récupérer et enregistrer les img
@@ -197,7 +200,7 @@ def save_image(file_name, url, category_image):  # création d'une fonction pour
     new_directory = "{0}{1}{2}".format(ROOT_DIRECTORY, os.sep, category_image)  # création d'un répertoire par catégorie
     new_file = "{0}{1}{2}.jpg".format(new_directory, os.sep, file_name)  # création
     if not os.path.isdir(new_directory):  # Si le répertoire n'existe pas...
-        os.makedirs(new_directory, exist_ok=True)  # alors on crée le répertoire de manière récursive
+        os.makedirs(new_directory, exist_ok=True)  # alors on crée le nouveau répertoire de manière récursive
 
     response = requests.get(url, stream=True)
     f = open(new_file, 'wb')  # nom du fichier + wb (écriture en mode binaire)
@@ -206,9 +209,9 @@ def save_image(file_name, url, category_image):  # création d'une fonction pour
 
 
 # assemblage des urls relatives pour créer des urls absolues des produits
-
+URL_CATEGORIE_ABSOLUE = "https://books.toscrape.com/catalogue/"
 for i in url_produits:  # on parcourt les urls relatives ligne à ligne de tous les produits
-    total_url = (urllib.parse.urljoin(url_categorie_absolue, i))  # on assemble les 2 morceaux d'url à l'aide d'urljoin
+    total_url = "{0}{1}".format(URL_CATEGORIE_ABSOLUE, i.replace("../../../", ""))
     liste_url_produit_par_categorie.append(
         total_url)  # récupération des urls absolues dans le tableau liste_url_produit_par_categorie
 
@@ -262,8 +265,6 @@ save_to_csv(product_pages_url, universal_product_code, title, price_including_ta
             number_available, product_description, category, review_rating, image_url, temp_category)
 
 print("Opération terminée. Toutes les données et images ont été extraites. Merci pour votre patience ;-)")
-'''
-time_start = datetime.now()
-time_stop = datetime.now() -start
-print(f'Export process finished in {time_stop - time_start}.')
-'''
+
+end_date = datetime.now()
+print("le programme s'est exécuté en", end_date - start_date)

@@ -41,4 +41,4 @@ Patience... votre terminal vous indiquera lorsque votre programme aura terminé 
 
 
 
-Cordialement/Best regards,
+Cordialement
