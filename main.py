@@ -15,6 +15,8 @@ liste_url_categorie = []  # Urls absolues de toutes les categories du site
 url_produits = []  # rangement des urls relatives des produits
 liste_url_produit_par_categorie = []  # rangement des urls absolues des produits
 var_dynamique = "page-"  # initialisation d'une variable pour créer des urls dynamiques
+ROOT_DIRECTORY = "Images"  # Constante ROOT "images" pour la création du dossier de rangement des images
+ROOT_DIRECTORY_CSV = "csv"
 
 # Declaration des tableaux vides pour le rangement des données et la mise en page CSV
 
@@ -86,10 +88,6 @@ for url_categorie_absolue in liste_url_categorie:  # on parcourt les urls absolu
 print("Opération effectuée.")
 print("Veuillez patienter pendant la récupération des données produit et des images pour chaque catégorie :")
 
-#  Création des fonctions d'extraction des données
-
-ROOT_DIRECTORY_CSV = "csv"
-
 
 def save_to_csv(product_pages_url, universal_product_code, title, price_including_tax, price_excluding_tax,
                 number_available, product_description, category, review_rating, image_url, temp_category):
@@ -104,11 +102,6 @@ def save_to_csv(product_pages_url, universal_product_code, title, price_includin
         os.makedirs(ROOT_DIRECTORY_CSV, exist_ok=True)  # alors on crée le répertoire de manière récursive
     print(filename)
     book_to_scrape.to_csv(filename, sep=';', index=False, encoding='utf-8-sig')
-
-# Récupération des images
-
-
-ROOT_DIRECTORY = "Images"  # création de la constante ROOT "images" pour la création du dossier de rangement
 
 
 def save_image(file_name, url, category_image):
@@ -138,8 +131,8 @@ for urli in liste_url_produit_par_categorie:  # on parcourt les urls absolues de
     response = requests.get(product_page_url)
     html = response.content.decode('utf-8', 'ignore')
     soup = BeautifulSoup(html, 'html.parser')
-    base_url = "https://books.toscrape.com/"  # variable pour reconstitution url absolue des images
-
+    base_url = "https://books.toscrape.com/"  # variable pour la reconstitution des urls absolues des images
+    # Extraction des données
     element = soup.find('table', class_="table table-striped").findAll(["td"])
     url = product_page_url
     upc = element[0]
